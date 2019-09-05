@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request
 import requests
 import json
 import pandas as pd
 from bokeh.plotting import figure, output_file, save
-from bokeh.resources import CDN
-from bokeh.embed import file_html
+from bokeh.util.string import encode_utf8
+from bokeh.embed import components
 
 app = Flask(__name__)
 global input_text
@@ -15,7 +15,7 @@ def index():
     return render_template('index.html',ticker=input_text)
 
 @app.route('/plot', methods=['POST'])
-def my_form_post():
+def form_post_plot():
     input_text = request.form['ticker']
     try:
         features = request.form.getlist('features')
@@ -23,11 +23,9 @@ def my_form_post():
             features=['adj_close']
     except json.decoder.JSONDecodeError:
         features =['adj_close']
-        
-    print(features)
-    #tick_code = 
-    display_plot(input_text.upper(),features)
-    return render_template('plot.html')
+         
+    script, div = display_plot(input_text.upper(),features)
+    return encode_utf8(render_template('plot.html', script=script, div=div))
 
 def display_plot(tick_code, features):
     print(tick_code)
@@ -42,28 +40,22 @@ def display_plot(tick_code, features):
     cols = [x['name'] for x in json_data['datatable']['columns']]
     data_tick = pd.DataFrame(data, columns=cols)
     data_tick['date']=pd.to_datetime(data_tick['date'], format='%Y-%m-%d')
-    print('Dataframe shape:' , data_tick.shape)
-    print('Datatype: ',data_tick.dtypes)
-    
     data = data_tick[data_tick['date']>'2017-03-30']
-    print(data.head())
-    print(data.shape)
     x = data['date']
-    output_file('templates/plot.html')
+    #output_file('templates/plot.html')
     p = figure(
             title= 'Plot for {}'.format(tick_code),
             x_axis_label='Date',
             x_axis_type='datetime')
-    if len(features)==0:
-        y = data['adj_close']
-        p.line(x,y,legend='adj_close')
+    
     colors=['red','blue','orange','green']
     for i, feature in enumerate(features):
         y = data[feature]
         p.line(x,y,legend=feature,line_color=colors[i])
-    save(p)
-#    html = file_html(plot, CDN, "my plot")
-
+        print('Plotted feature: ', feature)
+    # save(p)
+    script, div = components(p)
+    return script,div
 
 if __name__ == '__main__':
-  app.run()
+    app.run(port=33507)
