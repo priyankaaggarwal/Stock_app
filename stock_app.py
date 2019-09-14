@@ -13,7 +13,7 @@ global input_text
 def index():
     input_text = ''
     months = ['04-2017', '05-2017','06-2017', '07-2017', '08-2017', '09-2017',
-              '10-2017','11-2017','12-2017','01-2018','02-2018','03-2018','04-2018']
+              '10-2017','11-2017','12-2017','01-2018','02-2018','03-2018']
     return render_template('index.html',ticker=input_text, months=months)
 
 @app.route('/plot', methods=['POST'])
