@@ -21,6 +21,12 @@
           <input type="checkbox" name="features" value="open" />Opening price<br>
           <input type="checkbox" name="features" value="adj_open" />Adjusted opening price<br>
           </p>
+          <p><select name="months" method="GET" action="/">
+            <option value="{{months[0]}}" selected>{{months[0]}}</option>
+            {% for month in months[1:] %}
+            <option value="{{month}}">{{month}}</option>
+            {% endfor %}
+          </select></p>
           <p><input type="submit" value="Submit"></p>
           </form>
         </div>
